@@ -5,7 +5,7 @@ Documentation       Orders robots from RobotSpareBin Industries Inc.
 ...                 Embeds the screenshot of the robot to the PDF receipt and deletes screenshot
 ...                 Creates ZIP archive of the receipts and the images.
 
-Library             RPA.Browser.Selenium    auto_close=${FALSE}
+Library             RPA.Browser.Selenium
 Library             RPA.HTTP
 Library             RPA.Tables
 Library             RPA.PDF
@@ -13,7 +13,6 @@ Library             RPA.Archive
 Library             RPA.FileSystem
 Library             RPA.Dialogs
 Library             RPA.Robocorp.Vault
-Library             RPA.RobotLogListener
 
 
 *** Variables ***
@@ -29,19 +28,20 @@ Order robots from RobotSpareBin Industries Inc
     ${filename}=    Open dialog for order file
     Open the robot order website
     ${orders}=    Get orders    ${filename}
+    # Log amount of orders to process
     ${count}=    Get Length    ${orders}
     Log    ${count}
     FOR    ${row}    IN    @{orders}
         Close the annoying modal
         Fill the form    ${row}
         Preview the robot
+        # Try to process order for 10 times
         Wait Until Keyword Succeeds    10x    1s    Submit the order
         ${pdf}=    Store the receipt as a PDF file    ${row}[Order number]
         ${screenshot}=    Take a screenshot of the robot    ${row}[Order number]
         Embed the robot screenshot to the receipt PDF file    ${screenshot}    ${pdf}
         Go to order another robot
-
-        BREAK
+        #BREAK
     END
     Create a ZIP file of the receipts
     [Teardown]    Cleanup
@@ -53,6 +53,7 @@ Open the robot order website
 
 Get orders
     [Arguments]    ${file}
+    # Download orders
     Download    ${BASEURL}/${file}    overwrite=True
     ${orders}=    Read table from CSV    orders.csv
     RETURN    ${orders}
@@ -70,11 +71,11 @@ Fill the form
 
 Preview the robot
     Click Button    id:preview
-    Wait Until Page Contains Element    xpath://div[@id="robot-preview-image"]/img[1]
+    Wait Until Element Is Visible    xpath://div[@id="robot-preview-image"]/img[1]    5s
 
 Submit the order
     Click Button    id:order
-    Wait Until Element Is Visible    id:receipt    10s
+    Wait Until Element Is Visible    id:receipt    5s
 
 Store the receipt as a PDF file
     [Arguments]    ${orderNo}
@@ -111,7 +112,8 @@ Cleanup
     Remove Directory    ${RECEIPTS}
 
 Open dialog for order file
-    Add text input    filename    label=Order CSV filename e.g. orders.csv
+    Add text    Please enter order CSV filename e.g. orders.csv
+    Add text input    filename    label="filename"
     ${response}=    Run dialog
     RETURN    ${response.filename}
 
