@@ -36,7 +36,7 @@ Order robots from RobotSpareBin Industries Inc
         Fill the form    ${row}
         Preview the robot
         # Try to process order for 10 times
-        Wait Until Keyword Succeeds    10x    1s    Submit the order
+        Wait Until Keyword Succeeds    10x    2s    Submit the order
         ${pdf}=    Store the receipt as a PDF file    ${row}[Order number]
         ${screenshot}=    Take a screenshot of the robot    ${row}[Order number]
         Embed the robot screenshot to the receipt PDF file    ${screenshot}    ${pdf}
@@ -49,7 +49,7 @@ Order robots from RobotSpareBin Industries Inc
 
 *** Keywords ***
 Open the robot order website
-    Open Available Browser    ${BASEURL}/#/robot-order
+    Open Headless Chrome Browser    ${BASEURL}/#/robot-order
 
 Get orders
     [Arguments]    ${file}
@@ -71,11 +71,11 @@ Fill the form
 
 Preview the robot
     Click Button    id:preview
-    Wait Until Element Is Visible    xpath://div[@id="robot-preview-image"]/img[1]    5s
+    Wait Until Element Is Visible    xpath://div[@id="robot-preview-image"]/img[1]    2s
 
 Submit the order
     Click Button    id:order
-    Wait Until Element Is Visible    id:receipt    5s
+    Wait Until Element Is Visible    id:receipt    2s
 
 Store the receipt as a PDF file
     [Arguments]    ${orderNo}
